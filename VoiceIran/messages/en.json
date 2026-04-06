@@ -1,0 +1,73 @@
+{
+  "common": {
+    "siteName": "Voice Iran",
+    "siteTitle": "Voice Iran",
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "loading": "Loading...",
+    "empty": "No items found",
+    "publishedAt": "Published at",
+    "back": "Back",
+    "search": "Search",
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "nav": {
+    "home": "Home",
+    "news": "News",
+    "arsenal": "Arsenal",
+    "martyrs": "Martyrs",
+    "documents": "Documents",
+    "search": "Search",
+    "achievements": "Achievements"
+  },
+  "home": {
+    "heroTitle": "Official Voice Iran Information Platform",
+    "heroDescription": "Official news, analyses and documents with bilingual coverage.",
+    "latestNews": "Latest News",
+    "featuredWeapons": "Featured Arsenal",
+    "featuredDocuments": "Featured Documents",
+    "featuredMartyrs": "Tribute to Martyrs"
+  },
+  "news": {
+    "title": "News",
+    "description": "Latest official news and reports",
+    "results": "{count} posts"
+  },
+  "arsenal": {
+    "title": "Arsenal",
+    "description": "Defense systems and equipment",
+    "results": "{count} systems"
+  },
+  "martyrs": {
+    "title": "Martyrs",
+    "description": "Biographies and memorial profiles",
+    "results": "{count} profiles"
+  },
+  "documents": {
+    "title": "Documents",
+    "description": "Official videos, reports and files",
+    "results": "{count} documents"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "description": "Military and strategic achievements of Iran"
+  },
+  "search": {
+    "title": "Search",
+    "description": "Search across content",
+    "placeholder": "Search content...",
+    "loading": "Searching...",
+    "noResults": "No results found",
+    "results": "{count} results"
+  },
+  "footer": {
+    "description": "Official publication platform for public users",
+    "madeBy": "Made by Aeter",
+    "quickLinks": "Quick Links"
+  },
+  "meta": {
+    "title": "Voice Iran",
+    "description": "Official bilingual platform for news, documents and analysis"
+  }
+}

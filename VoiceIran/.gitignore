@@ -1,0 +1,30 @@
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+next.user-config.*
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.venv/
+.next/
+.DS_Store
+
+# Python / Django artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Local app/runtime data
+*.sqlite3
+VoiceIran/db.sqlite3
+VoiceIran/media/
+VoiceIran/runtime_data/observability/*.jsonl

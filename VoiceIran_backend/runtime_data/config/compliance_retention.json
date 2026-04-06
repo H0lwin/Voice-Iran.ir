@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "data_domain": "audit_events",
+      "retention_days": 365,
+      "delete_strategy": "hard_delete",
+      "is_active": true
+    },
+    {
+      "data_domain": "search_queries",
+      "retention_days": 180,
+      "delete_strategy": "truncate_ip_hash",
+      "is_active": true
+    }
+  ]
+}

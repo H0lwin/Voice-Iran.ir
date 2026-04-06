@@ -1,0 +1,125 @@
+# Nested git repositories (if you want to track them separately)
+# Uncomment one of these based on your chosen approach:
+
+# Option A: Ignore nested repos completely
+# VoiceIran/
+# VoiceIranAdminV0/
+
+# Option B: Track as submodules (don't ignore, but use git submodule add)
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+next.user-config.*
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+/static
+
+# Virtual Environment
+env/
+venv/
+ENV/
+.venv
+
+
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+next.user-config.*
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.venv/
+.next/
+.DS_Store
+
+# Python / Django artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Local app/runtime data
+*.sqlite3
+VoiceIran/db.sqlite3
+VoiceIran/media/
+VoiceIran/runtime_data/observability/*.jsonl
+
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Runtime data
+runtime_data/
+
+# Node modules (if any nested package.json)
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Documentation
+*.md
+!README.md
+
+# Git
+.git/
+.gitmodules

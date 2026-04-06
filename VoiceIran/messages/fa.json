@@ -1,0 +1,73 @@
+{
+  "common": {
+    "siteName": "صدای ایران",
+    "siteTitle": "Voice Iran | صدای ایران",
+    "readMore": "ادامه مطلب",
+    "viewAll": "مشاهده همه",
+    "loading": "در حال بارگذاری...",
+    "empty": "موردی یافت نشد",
+    "publishedAt": "تاریخ انتشار",
+    "back": "بازگشت",
+    "search": "جستجو",
+    "language": "زبان",
+    "theme": "پوسته"
+  },
+  "nav": {
+    "home": "خانه",
+    "news": "اخبار",
+    "arsenal": "تسلیحات",
+    "martyrs": "شهدا",
+    "documents": "مستندات",
+    "search": "جستجو",
+    "achievements": "دستاوردها"
+  },
+  "home": {
+    "heroTitle": "مرجع رسمی اطلاع رسانی Voice Iran",
+    "heroDescription": "اخبار، تحلیل ها و مستندات رسمی با پوشش دو زبانه و به روز.",
+    "latestNews": "آخرین اخبار",
+    "featuredWeapons": "تسلیحات منتخب",
+    "featuredDocuments": "مستندات منتخب",
+    "featuredMartyrs": "یاد شهدا"
+  },
+  "news": {
+    "title": "اخبار",
+    "description": "آخرین اخبار و گزارش های رسمی",
+    "results": "{count} خبر"
+  },
+  "arsenal": {
+    "title": "تسلیحات",
+    "description": "سامانه ها و تجهیزات دفاعی",
+    "results": "{count} سامانه"
+  },
+  "martyrs": {
+    "title": "شهدا",
+    "description": "یادنامه و زندگینامه شهدا",
+    "results": "{count} شهید"
+  },
+  "documents": {
+    "title": "مستندات",
+    "description": "ویدیو، گزارش و اسناد رسمی",
+    "results": "{count} مستند"
+  },
+  "achievements": {
+    "title": "دستاوردها",
+    "description": "دستاوردهای نظامی و راهبردی جمهوری اسلامی ایران"
+  },
+  "search": {
+    "title": "جستجو",
+    "description": "جستجو در کل محتوا",
+    "placeholder": "جستجو در محتوا...",
+    "loading": "در حال جستجو...",
+    "noResults": "نتیجه ای یافت نشد",
+    "results": "{count} نتیجه"
+  },
+  "footer": {
+    "description": "پلتفرم رسمی انتشار محتوا برای کاربران عمومی",
+    "madeBy": "Made by Aeter",
+    "quickLinks": "دسترسی سریع"
+  },
+  "meta": {
+    "title": "صدای ایران | Voice Iran",
+    "description": "پلتفرم رسمی چندزبانه برای انتشار اخبار، مستندات و محتوای تحلیلی"
+  }
+}

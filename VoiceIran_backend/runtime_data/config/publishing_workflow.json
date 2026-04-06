@@ -1,0 +1,24 @@
+{
+  "workflows": [
+    {
+      "name": "default",
+      "content_type_label": "generic",
+      "is_default": true,
+      "is_active": true,
+      "steps": [
+        {
+          "name": "draft",
+          "order": 1,
+          "required_role": "editor",
+          "is_mandatory": true
+        },
+        {
+          "name": "publish",
+          "order": 2,
+          "required_role": "admin",
+          "is_mandatory": true
+        }
+      ]
+    }
+  ]
+}
