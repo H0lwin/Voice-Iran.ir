@@ -51,4 +51,6 @@ if find_spec("rest_framework"):
         path("", include("arsenal.urls")),
         path("", include("martyrs.urls")),
         path("", include("documents.urls")),
+        # Admin Dashboard API
+        path("admin/", include("api.admin_urls")),
     ]

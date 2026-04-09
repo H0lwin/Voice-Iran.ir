@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { ConfirmDeleteModal } from '@/components/modals/confirm-delete-modal'
-import { postsApi } from '@/lib/api/api-client'
+import apiClient from '@/lib/api/client'
 import { usePermission } from '@/lib/auth/use-permission'
 import { formatJalaliDateTime, toPersianNumber } from '@/lib/utils/date'
 import { STATUS_LABELS, type Post, type PaginatedResponse } from '@/lib/types'
@@ -47,7 +47,7 @@ export default function NewsListPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await postsApi.getAll({
+      const response = await apiClient.getPosts({
         search: filters.search,
         status: filters.status === 'all' ? undefined : filters.status,
         page: filters.page,
@@ -75,7 +75,7 @@ export default function NewsListPage() {
     if (!isMountedRef.current) return
     setIsDeleting(true)
     try {
-      await postsApi.delete(deleteModal.post.id)
+      await apiClient.deletePost(Number(deleteModal.post.id))
       if (!isMountedRef.current) return
       toast.success('خبر با موفقیت حذف شد')
       setDeleteModal({ open: false, post: null })
@@ -127,7 +127,7 @@ export default function NewsListPage() {
   }, [])
 
   const handleBulkDelete = useCallback((ids: string[]) => {
-    Promise.all(ids.map((id) => postsApi.delete(id)))
+    Promise.all(ids.map((id) => apiClient.deletePost(Number(id))))
       .then(async () => {
         toast.success(`${toPersianNumber(ids.length)} خبر حذف شد`)
         await loadData()
@@ -136,7 +136,7 @@ export default function NewsListPage() {
   }, [loadData])
 
   const handleBulkPublish = useCallback((ids: string[]) => {
-    Promise.all(ids.map((id) => postsApi.updateStatus(id, 'published')))
+    Promise.all(ids.map((id) => apiClient.publishPost(Number(id))))
       .then(async () => {
         toast.success(`${toPersianNumber(ids.length)} خبر منتشر شد`)
         await loadData()
@@ -144,21 +144,12 @@ export default function NewsListPage() {
       .catch(() => toast.error('انتشار گروهی ناموفق بود'))
   }, [loadData])
 
-  const handleBulkArchive = useCallback((ids: string[]) => {
-    Promise.all(ids.map((id) => postsApi.updateStatus(id, 'archived')))
-      .then(async () => {
-        toast.success(`${toPersianNumber(ids.length)} خبر آرشیو شد`)
-        await loadData()
-      })
-      .catch(() => toast.error('آرشیو گروهی ناموفق بود'))
-  }, [loadData])
-
   const columns: ColumnDef<Post>[] = useMemo(
     () => [
       {
         accessorKey: 'title',
         header: 'عنوان',
-        cell: ({ row }) => <p className="line-clamp-1 max-w-[360px] text-small font-medium">{row.original.title}</p>,
+        cell: ({ row }) => <p className="line-clamp-1 max-w-[360px] text-small font-medium">{row.original.title || row.original.slug}</p>,
       },
       {
         id: 'app',
@@ -166,12 +157,12 @@ export default function NewsListPage() {
         cell: () => <span className="text-small text-muted-foreground">اخبار</span>,
       },
       {
-        accessorKey: 'author',
-        header: 'ویرایشگر',
-        cell: ({ row }) => <span className="text-small">{row.original.author.fullName}</span>,
+        accessorKey: 'view_count',
+        header: 'بازدید',
+        cell: ({ row }) => <span className="text-small">{row.original.viewCount || 0}</span>,
       },
       {
-        accessorKey: 'createdAt',
+        accessorKey: 'created_at',
         header: 'تاریخ ایجاد',
         cell: ({ row }) => <span className="text-small text-muted-foreground">{formatJalaliDateTime(row.original.createdAt)}</span>,
       },
@@ -245,7 +236,6 @@ export default function NewsListPage() {
         onSearch={handleSearch}
         onBulkDelete={canDelete ? handleBulkDelete : undefined}
         onBulkPublish={canChange ? handleBulkPublish : undefined}
-        onBulkArchive={canChange ? handleBulkArchive : undefined}
         statusFilter={{
           value: filters.status,
           onChange: handleStatusChange,
@@ -282,8 +272,8 @@ export default function NewsListPage() {
         open={deleteModal.open}
         onOpenChange={(open) => setDeleteModal({ open, post: open ? deleteModal.post : null })}
         onConfirm={handleDelete}
-        title={`حذف ${deleteModal.post?.title || 'خبر'}`}
-        itemName={deleteModal.post?.title}
+        title={`حذف ${deleteModal.post?.title || deleteModal.post?.slug || 'خبر'}`}
+        itemName={deleteModal.post?.title || deleteModal.post?.slug}
         isLoading={isDeleting}
       />
     </div>

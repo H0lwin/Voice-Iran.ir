@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class TaxonomyDomain(models.TextChoices):
@@ -9,12 +10,38 @@ class TaxonomyDomain(models.TextChoices):
     GLOBAL = "global", "عمومی"
 
 
+class Vocabulary(models.Model):
+    """Vocabulary (Group of terms)"""
+    name = models.CharField("نام", max_length=150)
+    name_en = models.CharField("نام انگلیسی", max_length=150, blank=True)
+    machine_name = models.SlugField("نام ماشینی", max_length=160, unique=True)
+    description = models.TextField("توضیحات", blank=True)
+    is_hierarchical = models.BooleanField("سلسله‌مراتبی", default=False)
+    created_at = models.DateTimeField("زمان ایجاد", auto_now_add=True)
+    updated_at = models.DateTimeField("زمان بروزرسانی", auto_now=True)
+
+    class Meta:
+        verbose_name = "واژگان"
+        verbose_name_plural = "واژگان‌ها"
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Term(models.Model):
     class TermType(models.TextChoices):
         TAG = "tag", "برچسب"
         CATEGORY = "category", "دسته بندی"
         TOPIC = "topic", "موضوع"
 
+    vocabulary = models.ForeignKey(
+        Vocabulary,
+        verbose_name="واژگان",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="terms",
+    )
     slug = models.SlugField("اسلاگ", max_length=160)
     name = models.CharField("نام", max_length=150)
     name_en = models.CharField("نام انگلیسی", max_length=150, blank=True)
@@ -32,6 +59,8 @@ class Term(models.Model):
     description_en = models.TextField("توضیحات انگلیسی", blank=True)
     is_active = models.BooleanField("فعال", default=True)
     sort_order = models.PositiveIntegerField("ترتیب نمایش", default=0)
+    created_at = models.DateTimeField("زمان ایجاد", auto_now_add=True)
+    updated_at = models.DateTimeField("زمان بروزرسانی", auto_now=True)
 
     class Meta:
         verbose_name = "ترم"

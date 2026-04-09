@@ -1,7 +1,7 @@
 'use client'
 
 import { ContentLibraryList } from '@/components/dashboard/content-library-list'
-import { weaponsApi } from '@/lib/api/api-client'
+import apiClient from '@/lib/api/client'
 import type { Weapon } from '@/lib/types'
 
 export default function ArsenalListPage() {
@@ -9,12 +9,12 @@ export default function ArsenalListPage() {
     <ContentLibraryList<Weapon>
       app="arsenal"
       title="تسلیحات"
-      description="فهرست و مشاهدهٔ محتوای بخش تسلیحات"
+      description="فهرست و مشاهده محتوای بخش تسلیحات"
       typeLabel="تسلیحات"
-      fetchAll={weaponsApi.getAll}
+      fetchAll={(filters) => apiClient.getWeapons(filters)}
       basePath="/dashboard/arsenal"
       categoryLabel="رده"
-      getCategoryLabel={(row) => row.weaponCategory?.name}
+      getCategoryLabel={(row) => (row as Weapon).weaponCategory?.name}
     />
   )
 }

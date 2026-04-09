@@ -8,30 +8,28 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { StatusBadge } from '@/components/ui/status-badge'
-import {
-  achievementsApi,
-  dashboardApi,
-  documentsApi,
-  martyrsApi,
-  postsApi,
-  publishingApi,
-  settingsApi,
-  weaponsApi,
-} from '@/lib/api/api-client'
+import apiClient from '@/lib/api/client'
 import { useAuthStore } from '@/lib/store/auth-store'
 import { formatJalaliDateTime, formatPersianNumber } from '@/lib/utils/date'
-import type { ContentItem, Post } from '@/lib/types'
+import type { Post } from '@/lib/types'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 
 type Delta = { value: number }
 
 type OverviewStats = {
-  publishedNews: number
+  totalPosts: number
+  publishedPosts: number
+  pendingReview: number
+  draftPosts: number
+  totalMartyrs: number
   publishedMartyrs: number
-  verifiedAchievements: number
-  todayViews: number
+  totalWeapons: number
   publishedWeapons: number
+  totalDocuments: number
   publishedDocuments: number
+  totalAchievements: number
+  verifiedAchievements: number
+  totalUsers: number
 }
 
 export default function DashboardPage() {
@@ -42,11 +40,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<OverviewStats | null>(null)
   const [recentPosts, setRecentPosts] = useState<Post[]>([])
   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
-  const [futureSchedules, setFutureSchedules] = useState<Array<{ id: string; contentTitle: string; scheduledAt: string }>>([])
-  const [liveStats, setLiveStats] = useState<Array<{ id: string; label: string; value: number }>>([])
-  const [activeBanners, setActiveBanners] = useState<Array<{ id: string; title: string; subtitle?: string }>>([])
 
-  const deltas = useMemo<Record<keyof OverviewStats, Delta>>(
+  const deltas = useMemo<Record<string, Delta>>(
     () => ({
       publishedNews: { value: 4 },
       publishedMartyrs: { value: 2 },
@@ -61,37 +56,19 @@ export default function DashboardPage() {
   const load = async () => {
     setIsLoading(true)
     try {
-      const [dashboard, news, martyrs, achievements, weapons, documents, schedules, coreStats, banners] = await Promise.all([
-        dashboardApi.getStats(),
-        postsApi.getAll({ page: 1, pageSize: 500 }),
-        martyrsApi.getAll({ page: 1, pageSize: 500 }),
-        achievementsApi.getAll({ page: 1, pageSize: 500 }),
-        weaponsApi.getAll({ page: 1, pageSize: 500 }),
-        documentsApi.getAll({ page: 1, pageSize: 500 }),
-        publishingApi.getSchedules(),
-        settingsApi.getLiveStats(),
-        settingsApi.getBanners(),
-      ])
+      // Get dashboard stats
+      const dashboardStats = await apiClient.getDashboardStats()
+      setStats(dashboardStats)
 
-      setStats({
-        publishedNews: news.data.filter((item) => item.status === 'published').length,
-        publishedMartyrs: martyrs.data.filter((item) => item.status === 'published').length,
-        verifiedAchievements: achievements.data.filter((item) => item.verificationStatus === 'verified' || item.status === 'published').length,
-        todayViews: dashboard.totalPosts * 42,
-        publishedWeapons: weapons.data.filter((item) => item.status === 'published').length,
-        publishedDocuments: documents.data.filter((item) => item.status === 'published').length,
-      })
-
-      setRecentPosts(news.data.slice(0, Math.max(8, rangeDays)))
-      setPendingPosts(news.data.filter((item) => item.status === 'pending_review').slice(0, 5))
-      setFutureSchedules(
-        schedules
-          .filter((item) => item.status === 'pending')
-          .slice(0, 5)
-          .map((item) => ({ id: item.id, contentTitle: item.contentTitle, scheduledAt: item.scheduledAt })),
-      )
-      setLiveStats(coreStats.filter((item) => item.isActive).map((item) => ({ id: item.id, label: item.label, value: item.value })))
-      setActiveBanners(banners.filter((item) => item.isActive).slice(0, 2).map((item) => ({ id: item.id, title: item.title, subtitle: item.subtitle })))
+      // Get recent posts
+      const postsResponse = await apiClient.getPosts({ page: 1, pageSize: 20 })
+      setRecentPosts(postsResponse.data || [])
+      
+      // Get pending posts
+      const pendingResponse = await apiClient.getPosts({ page: 1, pageSize: 20, status: 'review' })
+      setPendingPosts(pendingResponse.data || [])
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error)
     } finally {
       setIsLoading(false)
     }
@@ -102,13 +79,21 @@ export default function DashboardPage() {
   }, [rangeDays])
 
   const approvePending = async (post: Post) => {
-    await postsApi.updateStatus(post.id, 'published')
-    await load()
+    try {
+      await apiClient.publishPost(Number(post.id))
+      await load()
+    } catch (error) {
+      console.error('Failed to publish post:', error)
+    }
   }
 
   const rejectPending = async (post: Post) => {
-    await postsApi.updateStatus(post.id, 'rejected', 'رد از داشبورد')
-    await load()
+    try {
+      await apiClient.rejectPost(Number(post.id), 'رد از داشبورد')
+      await load()
+    } catch (error) {
+      console.error('Failed to reject post:', error)
+    }
   }
 
   if (isLoading || !stats) {
@@ -116,84 +101,24 @@ export default function DashboardPage() {
   }
 
   const kpiItems = [
-    { key: 'publishedNews' as const, title: 'اخبار منتشرشده', value: stats.publishedNews },
+    { key: 'publishedNews' as const, title: 'اخبار منتشرشده', value: stats.publishedPosts },
     { key: 'publishedMartyrs' as const, title: 'شهدا ثبت‌شده', value: stats.publishedMartyrs },
     { key: 'verifiedAchievements' as const, title: 'دستاوردهای تأییدشده', value: stats.verifiedAchievements },
-    { key: 'todayViews' as const, title: 'بازدید امروز', value: stats.todayViews },
+    { key: 'totalUsers' as const, title: 'کاربران', value: stats.totalUsers },
     { key: 'publishedWeapons' as const, title: 'تسلیحات منتشرشده', value: stats.publishedWeapons },
     { key: 'publishedDocuments' as const, title: 'مستندات منتشرشده', value: stats.publishedDocuments },
-  ].filter((item) => !(role === 'editor' && item.key === 'todayViews'))
+  ].filter((item) => !(role === 'editor' && item.key === 'totalUsers'))
 
   const trafficTrend = recentPosts
     .slice(0, rangeDays)
-    .map((post, index) => ({ day: String(index + 1), views: post.viewCount || 0 }))
+    .map((post: Post, index: number) => ({ day: String(index + 1), views: post.viewCount || 0 }))
 
   return (
     <div className="space-y-8">
-      {activeBanners.length > 0 && (
-        <div className="space-y-2">
-          {activeBanners.map((banner) => (
-            <div key={banner.id} className="rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 px-4 py-2 text-small">
-              <p className="font-medium">{banner.title}</p>
-              {banner.subtitle ? <p className="text-muted-foreground">{banner.subtitle}</p> : null}
-            </div>
-          ))}
-        </div>
-      )}
-
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {kpiItems.map((item) => (
-          <KpiCard key={item.key} title={item.title} value={item.value} delta={deltas[item.key].value} />
+          <KpiCard key={item.key} title={item.title} value={item.value} delta={deltas[item.key]?.value || 0} />
         ))}
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">بازدید {formatPersianNumber(rangeDays)} روز اخیر</CardTitle>
-            <div className="flex items-center gap-2">
-              {[7, 30, 90].map((days) => (
-                <Button
-                  key={days}
-                  size="sm"
-                  variant={rangeDays === days ? 'default' : 'outline'}
-                  onClick={() => setRangeDays(days as 7 | 30 | 90)}
-                >
-                  {days.toLocaleString('fa-IR')} روز
-                </Button>
-              ))}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer className="h-72 w-full" config={{ views: { label: 'بازدید', color: 'var(--color-primary)' } }}>
-              <LineChart data={trafficTrend} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="4 4" vertical={false} />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} width={44} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="views" stroke="var(--color-views)" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">زمان‌بندی‌های آینده</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {futureSchedules.length === 0 ? (
-              <p className="text-small text-muted-foreground">زمان‌بندی فعالی وجود ندارد.</p>
-            ) : (
-              futureSchedules.map((item) => (
-                <div key={item.id} className="rounded-[var(--radius-md)] border border-border p-2">
-                  <p className="line-clamp-1 text-small font-medium">{item.contentTitle}</p>
-                  <p className="text-caption text-muted-foreground">{formatJalaliDateTime(item.scheduledAt)}</p>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -208,10 +133,10 @@ export default function DashboardPage() {
             {pendingPosts.length === 0 ? (
               <p className="text-small text-muted-foreground">آیتمی برای بررسی وجود ندارد.</p>
             ) : (
-              pendingPosts.map((post) => (
+              pendingPosts.map((post: Post) => (
                 <div key={post.id} className="rounded-[var(--radius-md)] border border-border p-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="line-clamp-1 text-small font-medium">{post.title}</p>
+                    <p className="line-clamp-1 text-small font-medium">{post.title || post.slug}</p>
                     <StatusBadge status={post.status} />
                   </div>
                   <div className="flex items-center gap-2">
@@ -230,19 +155,27 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">آمار لحظه‌ای</CardTitle>
+            <CardTitle className="text-base">خلاصه وضعیت</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {liveStats.length === 0 ? (
-              <p className="text-small text-muted-foreground">آمار فعالی ثبت نشده است.</p>
-            ) : (
-              liveStats.map((item) => (
-                <div key={item.id} className="rounded-[var(--radius-md)] border border-border p-3">
-                  <p className="text-caption text-muted-foreground">{item.label}</p>
-                  <p className="text-xl font-medium">{formatPersianNumber(item.value)}</p>
-                </div>
-              ))
-            )}
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-caption text-muted-foreground">کل اخبار</p>
+                <p className="text-xl font-medium">{formatPersianNumber(stats.totalPosts)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-caption text-muted-foreground">در انتظار بازبینی</p>
+                <p className="text-xl font-medium">{formatPersianNumber(stats.pendingReview)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-caption text-muted-foreground">کل شهدا</p>
+                <p className="text-xl font-medium">{formatPersianNumber(stats.totalMartyrs)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-caption text-muted-foreground">کل دستاوردها</p>
+                <p className="text-xl font-medium">{formatPersianNumber(stats.totalAchievements)}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </section>

@@ -7,7 +7,7 @@ import { Check, X, Eye, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { achievementsApi } from '@/lib/api/api-client'
+import apiClient from '@/lib/api/client'
 import { usePermission } from '@/lib/auth/use-permission'
 import { formatJalaliDateTime } from '@/lib/utils/date'
 import type { Achievement, PaginatedResponse } from '@/lib/types'
@@ -22,7 +22,7 @@ export default function AchievementsListPage() {
   const load = useCallback(async () => {
     setIsLoading(true)
     try {
-      const response = await achievementsApi.getAll({
+      const response = await apiClient.getAchievements({
         search: filters.search,
         status: filters.status === 'all' ? undefined : filters.status,
         page: filters.page,
@@ -45,17 +45,21 @@ export default function AchievementsListPage() {
   }, [load])
 
   const updateVerification = async (row: Achievement, status: 'verified' | 'rejected') => {
-    await achievementsApi.update(row.id, {
-      verificationStatus: status,
-      status: status === 'verified' ? 'published' : row.status,
-    })
-    toast.success(status === 'verified' ? 'دستاورد تأیید شد' : 'دستاورد رد شد')
-    await load()
+    try {
+      await apiClient.updateAchievement(Number(row.id), {
+        verificationStatus: status,
+        status: status === 'verified' ? 'published' : row.status,
+      })
+      toast.success(status === 'verified' ? 'دستاورد تأیید شد' : 'دستاورد رد شد')
+      await load()
+    } catch {
+      toast.error('خطا در بروزرسانی')
+    }
   }
 
   const columns: ColumnDef<Achievement>[] = useMemo(
     () => [
-      { accessorKey: 'title', header: 'عنوان', cell: ({ row }) => <p className="line-clamp-1 max-w-[280px] text-small font-medium">{row.original.title}</p> },
+      { accessorKey: 'title', header: 'عنوان', cell: ({ row }) => <p className="line-clamp-1 max-w-[280px] text-small font-medium">{row.original.title || row.original.slug}</p> },
       { accessorKey: 'status', header: 'وضعیت', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
       {
         id: 'verificationStatus',
@@ -66,7 +70,7 @@ export default function AchievementsListPage() {
         },
       },
       {
-        accessorKey: 'createdAt',
+        accessorKey: 'created_at',
         header: 'تاریخ',
         cell: ({ row }) => <span className="text-small text-muted-foreground">{formatJalaliDateTime(row.original.createdAt)}</span>,
       },

@@ -1,7 +1,7 @@
 'use client'
 
 import { ContentLibraryList } from '@/components/dashboard/content-library-list'
-import { documentsApi } from '@/lib/api/api-client'
+import apiClient from '@/lib/api/client'
 import type { Document } from '@/lib/types'
 
 export default function DocumentsListPage() {
@@ -9,12 +9,12 @@ export default function DocumentsListPage() {
     <ContentLibraryList<Document>
       app="documents"
       title="اسناد"
-      description="فهرست و مشاهدهٔ اسناد و مدارک"
+      description="فهرست و مشاهده اسناد و مدارک"
       typeLabel="اسناد"
-      fetchAll={documentsApi.getAll}
+      fetchAll={(filters) => apiClient.getDocuments(filters)}
       basePath="/dashboard/documents"
       categoryLabel="دسته سند"
-      getCategoryLabel={(row) => row.documentCategory?.name}
+      getCategoryLabel={(row) => (row as Document).documentCategory?.name}
     />
   )
 }
